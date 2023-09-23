@@ -1,80 +1,71 @@
 
-# Laminify - Instantly classify data with [Lamini](https://lamini.ai) & Llama 2
+# Routing agent that uses tools with [Lamini](https://lamini.ai) & Llama 2
 
-Train a new classifier with just a prompt.
+Train a new routing agent that uses tools with just prompts.
 
 ```bash
-./train.sh --class "cat: CAT_DESCRIPTION" --class "dog: DOG_DESCRIPTION"
+./train.sh
 ```
 
+You can specify your own tools (and descriptions of them using prompts) and optionally add training data to each class, by just adding a flag that specifies the path to a CSV file with columns "class_name" for the tool and "data" for an example user query.
+
 ```bash
-./classify.sh 'woof'
+ ./train.sh
+ --class "search: SEARCH_TOOL_DESCRIPTION" 
+ --class "order: ORDERING_TOOL_DESCRIPTION" 
+ --class "noop: NO_TOOL_DESCRIPTION"
+ --data CSV_DATA_FILEPATH
+```
+
+Then, route a new user request:
+```bash
+./classify.sh "what is the price of this item?"
 ```
 
 ```python
-{'data': 'woof',
- 'prediction': 'dog',
- 'probabilities': array([0.37996491, 0.62003509])}
+{
+  'data': 'what is the price of this item?',
+  'prediction': 'search',
+  'probabilities': array([0.59599985, 0.18158525, 0.2224149 ])
+}
 ```
 
-For example, here is a cat/dog classifier trained using prompts.
-
-Cat prompt:
-
-```
-Cats are generally more independent and aloof. Cats are also more territorial and may be more aggressive when defending their territory.
-Cats are self-grooming animals, using their tongues to keep their coats clean and healthy. Cats use body language and vocalizations,
-such as meowing and purring, to communicate.  An example cat is whiskers, who is a cat who lives in a house with a human.
-Another example cat is furball, who likes to eat food and sleep.  A famous cat is garfield, who is a cat who likes to eat lasagna.
-```
-
-Dog prompt:
-```
-Dogs are social animals that live in groups, called packs, in the wild. They are also highly intelligent and trainable.
-Dogs are also known for their loyalty and affection towards their owners. Dogs are also known for their ability to learn and
-perform a variety of tasks, such as herding, hunting, and guarding.  An example dog is snoopy, who is the best friend of
-charlie brown.  Another example dog is clifford, who is a big red dog.
-```
-
+Run your LLM agent on multiple examples at once:
 ```bash
-./classify.sh --data "I like to sharpen my claws on the furniture." --data "I like to roll in the mud." --data "I like to run any play with a ball." --data "I like to sleep under the bed and purr." --data "My owner is charlie brown." --data "Meow, human! I'm famished! Where's my food?" --data "Purr-fect." --data "Hiss! Who dared to wake me from my nap? I'll have my revenge... later." --data "I'm so happy to see you! Can we go for a walk/play fetch/get treats now?" --data "I'm feeling a little ruff today, can you give me a belly rub to make me feel better?"
+./classify.sh --data "what is the price of this item?" --data "I'd like to find a plumber" --data "who is the best person to ping for delivery issues?" --data "I want to buy three of these organic bananas now"
 ```
 
 ```python
+{'data': 'what is the price of this item?',
+ 'prediction': 'search',
+ 'probabilities': array([0.59599985, 0.18158525, 0.2224149 ])}
+{'data': "I'd like to find a plumber",
+ 'prediction': 'noop',
+ 'probabilities': array([0.34477281, 0.25205545, 0.40317174])}
+{'data': 'who is the best person to ping for delivery issues?',
+ 'prediction': 'search',
+ 'probabilities': array([0.67681697, 0.13177853, 0.1914045 ])}
+{'data': 'I want to buy three of these organic bananas now',
+ 'prediction': 'order',
+ 'probabilities': array([0.37626405, 0.4238198 , 0.19991615])}
+ ```
 
-{'data': 'I like to sharpen my claws on the furniture.',
- 'prediction': 'cat',
- 'probabilities': array([0.55363432, 0.44636568])}
-{'data': 'I like to roll in the mud.',
- 'prediction': 'dog',
- 'probabilities': array([0.4563782, 0.5436218])}
-{'data': 'I like to run any play with a ball.',
- 'prediction': 'dog',
- 'probabilities': array([0.44391914, 0.55608086])}
-{'data': 'I like to sleep under the bed and purr.',
- 'prediction': 'cat',
- 'probabilities': array([0.51146226, 0.48853774])}
-{'data': 'My owner is charlie brown.',
- 'prediction': 'dog',
- 'probabilities': array([0.40052991, 0.59947009])}
-{'data': "Meow, human! I'm famished! Where's my food?",
- 'prediction': 'cat',
- 'probabilities': array([0.5172964, 0.4827036])}
-{'data': 'Purr-fect.',
- 'prediction': 'cat',
- 'probabilities': array([0.50431873, 0.49568127])}
-{'data': "Hiss! Who dared to wake me from my nap? I'll have my revenge... "
-         'later.',
- 'prediction': 'cat',
- 'probabilities': array([0.50088163, 0.49911837])}
-{'data': "I'm so happy to see you! Can we go for a walk/play fetch/get treats "
-         'now?',
- 'prediction': 'dog',
- 'probabilities': array([0.42178513, 0.57821487])}
-{'data': "I'm feeling a little ruff today, can you give me a belly rub to make "
-         'me feel better?',
- 'prediction': 'dog',
- 'probabilities': array([0.46141002, 0.53858998])}
+For example, here is a routing agent for a food delivery app that uses the tools {search, order, noop} trained using prompts.
+
+Search prompt:
+
+```
+User wants to get an answer about the food delivery app that is available in the FAQ pages of this app. This includes questions about their deliveries, payment, available grocery stores, shoppers, fees, and the app overall.
+```
+
+Order prompt:
+```
+User wants to order items, i.e. buy an item and place it into the cart. This includes any indication of wanting to checkout, or add to or modify the cart. It includes mentioning specific items, or general turn of phrase like 'I want to buy something'.
+```
+
+Noop prompt:
+```
+User didn't specify a tool, i.e. they didn't say they wanted to search or order. The ask is totally irrelevant to the delivery service app."
 ```
 
 # Installation
@@ -85,9 +76,9 @@ Requires docker: https://docs.docker.com/get-docker
 
 Setup your lamini keys (free): https://lamini-ai.github.io/auth/
 
-`git clone git@github.com:lamini-ai/laminify.git`
+`git clone git@github.com:lamini-ai/llm_routing_agent.git`
 
-`cd laminify`
+`cd llm_routing_agent`
 
 Train a new classifier.
 
@@ -188,7 +179,7 @@ classifier = LaminiClassifier.load(args["load"])
 
 ## How does it work?
 
-Laminify converts your prompts into a pile of data, using the Llama 2 LLM. It then finetunes another LLM to distinguish between each pile of data.  
+The LLM routing agent converts your prompts about tools into a pile of data about those tools, using the Llama 2 LLM. It then finetunes another LLM to distinguish between each pile of data. 
 
 We use several specialized LLMs derived from Llama 2 to convert prompts into piles of training examples for each class.  The code for this is available
 in the lamini python package if you want to look at it.  Working on open sourcing in an easier to read github page it when I'm not too distracted...
@@ -202,17 +193,14 @@ No, this is a week night hackathon project, give us feedback and we will improve
 
 ## Why wouldn't I just use a normal classifier like BART, XGBoost, BERT, etc?
 
-You don't need to label any data using Laminify.  Labeling data sucks.
+You don't need to label any data using the `LaminiClassifier`.  Labeling data sucks.
 
 No fiddling with hyperparameters. Fiddle with prompts instead.  Hopefully english is easier than attention_dropout_pcts.
 
 ## Why wouldn't I just use a LLM directly?
 
-A classifier always outputs a valid class.  An LLM might answer the question "Is this talking about a cat" with "Well... that depends on ....".  Writing a parser sucks.
+A classifier always outputs a valid class.  An LLM might answer the question "Is this talking about an order" with "Well... that depends on ....".  Writing a parser sucks.
 
 Added benefit: classifiers give you probabilities and can be calibrated: https://machinelearningmastery.com/threshold-moving-for-imbalanced-classification/
 
-## Why does this FAQ sound so sarcastic?
-
-Because it is 5am
 

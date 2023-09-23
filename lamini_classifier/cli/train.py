@@ -4,6 +4,8 @@ import argparse
 
 from pprint import pprint
 
+import pandas as pd
+
 
 def main():
     """This is a program that trains a classifier using the LaminiClassifier class.
@@ -29,14 +31,12 @@ def main():
         default=[],
     )
 
-    # Parse the training data using the format "class_name:data"
+    # Parse the training data from a csv file with two columns, class_name and data
     parser.add_argument(
-        "--train",
+        "--data",
         type=str,
-        nargs="+",
-        action="extend",
-        help="The training data to use for classification, in the format 'class_name:data'.",
-        default=[],
+        help="CSV filepath to the training data to use for classification, with the columns class_name and data.",
+        default="data.csv",
     )
 
     # Parse the path to save the model to
@@ -62,11 +62,6 @@ def main():
     # Create a new classifier
     classifier = LaminiClassifier()
 
-    # Train the classifier on the training data
-    for class_data in args["train"]:
-        class_name, data = class_data.split(":")
-        classifier.add_data_to_class(class_name, [data])
-
     # Train the classifier on the classes
     classes = {}
 
@@ -75,8 +70,18 @@ def main():
         assert class_name not in classes, f"Class name '{class_name}' already exists."
         classes[class_name] = prompt
 
-    if len(classes) == 0 and len(args["train"]) == 0:
+    if len(classes) == 0:
         classes = get_default_classes()
+
+    # Train the classifier on the training data
+    data_df = pd.read_csv(args["data"])
+    class_names = classes.keys()
+    for _, row in data_df.iterrows():
+        if row["class_name"] in class_names:
+            # import pdb; pdb.set_trace()
+            classifier.add_data_to_class(row["class_name"], [row["data"]])
+        else:
+            print(f"WARNING ------ Class name '{row['class_name']}' not found in classes, skipping.")
 
     if args["verbose"]:
         pprint("Training on classes:")
@@ -95,16 +100,17 @@ def get_default_classes():
     """Returns a dictionary of default classes to use for training.
 
     The default classes are:
-        - "cat"
-        - "dog"
+        - "search"
+        - "order"
+        - "noop"
     """
 
-    print("WARNING ------ No classes or data were specified, using default cat vs dog classes.")
+    print("WARNING ------ No classes or data were specified, using default search, order, noop tools (classes).")
 
     return {
-        "cat": "Cats are generally more independent and aloof. Cats are also more territorial and may be more aggressive when defending their territory.  Cats are self-grooming animals, using their tongues to keep their coats clean and healthy. Cats use body language and vocalizations, such as meowing and purring, to communicate.  An example cat is whiskers, who is a cat who lives in a house with a human.  Another example cat is furball, who likes to eat food and sleep.  A famous cat is garfield, who is a cat who likes to eat lasagna",
-        "dog": "Dogs are social animals that live in groups, called packs, in the wild. They are also highly intelligent and trainable. Dogs are also known for their loyalty and affection towards their owners. Dogs are also known for their ability to learn and perform a variety of tasks, such as herding, hunting, and guarding. Dogs are also known for their ability to learn and perform a variety of tasks, such as herding, hunting, and guarding.  An example dog is snoopy, who is the best friend of charlie brown.  Another example dog is clifford, who is a big red dog.",
+        "search": "User wants to get an answer about the food delivery app that is available in the FAQ pages of this app. This includes questions about their deliveries, payment, available grocery stores, shoppers, fees, and the app overall.",
+        "order": "User wants to order items, i.e. buy an item and place it into the cart. This includes any indication of wanting to checkout, or add to or modify the cart. It includes mentioning specific items, or general turn of phrase like 'I want to buy something'.",
+        "noop": "User didn't specify a tool, i.e. they didn't say they wanted to search or order. The ask is totally irrelevant to the delivery service app.",
     }
-
 
 main()
