@@ -19,26 +19,23 @@ You can specify your own tools (and descriptions of them using prompts) and opti
 
 Then, route a new user request:
 ```bash
-./classify.sh "what is the price of this item?"
+./classify.sh 'I want to buy three of these organic bananas now'
 ```
 
 ```python
 {
-  'data': 'what is the price of this item?',
-  'prediction': 'search',
-  'probabilities': array([0.59599985, 0.18158525, 0.2224149 ])
-}
+  'data': 'I want to buy three of these organic bananas now',
+  'prediction': 'order',
+  'probabilities': array([0.37626405, 0.4238198 , 0.19991615])
+ }
 ```
 
 Run your LLM agent on multiple examples at once:
 ```bash
-./classify.sh --data "what is the price of this item?" --data "I'd like to find a plumber" --data "who is the best person to ping for delivery issues?" --data "I want to buy three of these organic bananas now"
+./classify.sh --data "I'd like to find a plumber" --data "who is the best person to ping for delivery issues?" --data "I want to buy three of these organic bananas now"
 ```
 
 ```python
-{'data': 'what is the price of this item?',
- 'prediction': 'search',
- 'probabilities': array([0.59599985, 0.18158525, 0.2224149 ])}
 {'data': "I'd like to find a plumber",
  'prediction': 'noop',
  'probabilities': array([0.34477281, 0.25205545, 0.40317174])}
