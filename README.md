@@ -123,11 +123,17 @@ Now, it works!
 
 ## 2. Improving prompts
 
-You can also improve the prompts that are used to generate the training data. The more specific the prompt about each tool, and how it's unique and different from the other tools, the better the classifier will be.
+You can also improve the prompts that are used to generate the training data. 
+
+The more specific the prompt about each tool, and how it's unique and different from the other tools, the better the classifier will be.
+
+Experiment with different prompts and see what works best. Giving example, either through data or the prompt itself, can be helpful to the LLM.
 
 ## 3. Adding new tools
 
 Finally, you can add new tools. Just add a new class and prompt to the `train.sh` script and retrain the classifier.
+
+More tools can help the router distinguish between more types of requests. For example, you can make a `checkout` tool and a `add_to_cart` tool to distinguish between requests that are about checking out and requests that are about adding an item to the cart. Depending on what APIs you'd like to hit later, this could help with underlying analytics, in addition to improved routing.
 
 # Installation
 
