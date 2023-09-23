@@ -176,7 +176,7 @@ classifier = LaminiClassifier.load(args["load"])
 
 ## How does it work?
 
-The LLM routing agent converts your prompts about tools into a pile of data about those tools, using the Llama 2 LLM. It then finetunes another LLM to distinguish between each pile of data. 
+The LLM routing agent converts your prompts about tools into a pile of data about those tools, using the Llama 2 LLM. It then finetunes another LLM to distinguish between each pile of data. This was forked from the (LLM Classifier)[https://github.com/lamini-ai/llm_classifier/]
 
 We use several specialized LLMs derived from Llama 2 to convert prompts into piles of training examples for each class.  The code for this is available
 in the lamini python package if you want to look at it.  Working on open sourcing in an easier to read github page it when I'm not too distracted...
