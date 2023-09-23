@@ -27,7 +27,7 @@ Then, route a new user request:
   'data': 'I want to buy three of these organic bananas now',
   'prediction': 'order',
   'probabilities': array([0.37626405, 0.4238198 , 0.19991615])
- }
+}
 ```
 
 Run your LLM agent on multiple examples at once:
@@ -36,15 +36,21 @@ Run your LLM agent on multiple examples at once:
 ```
 
 ```python
-{'data': "I'd like to find a plumber",
- 'prediction': 'noop',
- 'probabilities': array([0.34477281, 0.25205545, 0.40317174])}
-{'data': 'who is the best person to ping for delivery issues?',
- 'prediction': 'search',
- 'probabilities': array([0.67681697, 0.13177853, 0.1914045 ])}
-{'data': 'I want to buy three of these organic bananas now',
- 'prediction': 'order',
- 'probabilities': array([0.37626405, 0.4238198 , 0.19991615])}
+{
+  'data': "I'd like to find a plumber",
+  'prediction': 'noop',
+  'probabilities': array([0.34477281, 0.25205545, 0.40317174])
+}
+{
+  'data': 'who is the best person to ping for delivery issues?',
+  'prediction': 'search',
+  'probabilities': array([0.67681697, 0.13177853, 0.1914045 ])
+}
+{
+  'data': 'I want to buy three of these organic bananas now',
+  'prediction': 'order',
+  'probabilities': array([0.37626405, 0.4238198 , 0.19991615])
+}
  ```
 
 For example, here is a routing agent for a food delivery app that uses the tools {search, order, noop} trained using prompts.
@@ -60,10 +66,68 @@ Order prompt:
 User wants to order items, i.e. buy an item and place it into the cart. This includes any indication of wanting to checkout, or add to or modify the cart. It includes mentioning specific items, or general turn of phrase like 'I want to buy something'.
 ```
 
-Noop prompt:
+No-op prompt:
 ```
 User didn't specify a tool, i.e. they didn't say they wanted to search or order. The ask is totally irrelevant to the delivery service app."
 ```
+
+# Iteration
+## 1. Improving data
+This classifier is v0. Building LLMs is iterative. Here are some tools you can use to iterate and improve your routing agent over time and with more data.
+```bash
+./classify.sh "buy the dragonfruit that's on sale"
+```
+
+But it routes to the wrong tool: it chooses `search` over `order`.
+```python
+{
+  'data': "buy the dragonfruit that's on sale",
+  'prediction': 'search',
+  'probabilities': array([0.4132954 , 0.33355575, 0.25314885])
+}
+```
+
+Alright, no problem. What you can do is add this and similar examples to the `data.csv` file and retrain the classifier. 
+
+You can check out `data_improved.csv` that has 3 extra examples.
+```bash
+order, "buy the dragonfruit that's on sale"
+order, "just buy the sale fruits please"
+order, "I want to get the dragonfruit"
+```
+
+Now, retrain the classifier with the new data.
+```bash
+./train.sh --data data_improved.csv
+```
+
+Now, it works!
+```bash
+./classify.sh
+--data "buy the dragonfruit that's on sale" # previous example
+--data "buy 1 dragonfruit" # new example that's close
+```
+
+```python
+{
+  'data': "buy the dragonfruit that's on sale",
+ 'prediction': 'order',
+ 'probabilities': array([0.206426  , 0.65338528, 0.14018872])
+}
+{
+  'data': 'buy 1 dragonfruit',
+ 'prediction': 'order',
+ 'probabilities': array([0.19983432, 0.66442344, 0.13574224])
+}
+```
+
+## 2. Improving prompts
+
+You can also improve the prompts that are used to generate the training data. The more specific the prompt about each tool, and how it's unique and different from the other tools, the better the classifier will be.
+
+## 3. Adding new tools
+
+Finally, you can add new tools. Just add a new class and prompt to the `train.sh` script and retrain the classifier.
 
 # Installation
 
