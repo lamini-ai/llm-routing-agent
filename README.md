@@ -22,6 +22,7 @@ Then, route a new user request:
 ./classify.sh 'I want to buy three of these organic bananas now'
 ```
 
+You can get the probabilities for all the classes, in this case `search` (37.6%), `order` (42.3%), and `noop` (19.9%). These can help with gauging uncertainty.
 ```python
 {
   'data': 'I want to buy three of these organic bananas now',
