@@ -144,9 +144,9 @@ Requires docker: https://docs.docker.com/get-docker
 
 Setup your lamini keys (free): https://lamini-ai.github.io/auth/
 
-`git clone git@github.com:lamini-ai/llm_routing_agent.git`
+`git clone git@github.com:lamini-ai/llm-routing-agent.git`
 
-`cd llm_routing_agent`
+`cd llm-routing-agent`
 
 Train a new classifier.
 
