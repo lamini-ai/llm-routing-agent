@@ -23,9 +23,11 @@ probabilities = classifier.predict_proba("I want to buy three of these organic b
 
 Optionally, add data before you train:
 ```
-llm_routing_agent.add_data_to_class(order, "I'd like to buy a bag of granny smith apples")
+llm_routing_agent.add_data_to_class("order", "I'd like to buy a bag of granny smith apples")
 llm_routing_agent.prompt_train(tools)
 ```
+
+If you include data on classes that aren't in your `tools`, then the classifier will still learn to predict them, but it won't have a description to leverage to further boost them. As a general suggestion, if you don't have any or little paired data to include on a class, then making sure there's a good description of it in the `tools` is the way to get the LLM to understand what it does.
 
 ### Run now
 
