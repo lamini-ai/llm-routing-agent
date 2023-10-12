@@ -3,21 +3,32 @@
 
 Train a new routing agent that uses tools with just prompts.
 
-```bash
-./train.sh
+```
+from lamini import LaminiClassifier
+
+llm_routing_agent = LaminiClassifier()
+tools = { "search" : search_tool_description,  "order": ordering_tool_description, "noop": no_tool_description }
+llm_routing_agent.prompt_train(tools)
 ```
 
-You can specify your own tools (and descriptions of them using prompts) and optionally add training data to each class, by just adding a flag that specifies the path to a CSV file with columns "class_name" for the tool and "data" for an example user query.
-
-```bash
- ./train.sh
- --class "search: SEARCH_TOOL_DESCRIPTION" 
- --class "order: ORDERING_TOOL_DESCRIPTION" 
- --class "noop: NO_TOOL_DESCRIPTION"
- --data CSV_DATA_FILEPATH
+Then, let the agent route!
+```
+probabilities = classifier.predict_proba("I want to buy three of these organic bananas now")
+>> {
+  'data': 'I want to buy three of these organic bananas now',
+  'prediction': 'order',
+  'probabilities': array([0.37626405, 0.4238198 , 0.19991615])
+}
 ```
 
-Then, route a new user request:
+Optionally, add data before you train:
+```
+llm_routing_agent.add_data_to_class(order, "I'd like to buy a bag of granny smith apples")
+llm_routing_agent.prompt_train(tools)
+```
+
+### Run now
+
 ```bash
 ./classify.sh 'I want to buy three of these organic bananas now'
 ```
@@ -53,6 +64,22 @@ Run your LLM agent on multiple examples at once:
   'probabilities': array([0.37626405, 0.4238198 , 0.19991615])
 }
  ```
+
+Train the LLM routing agent yourself:
+
+```bash
+./train.sh
+```
+
+You can specify your own tools (and descriptions of them using prompts) and optionally add training data to each class, by just adding a flag that specifies the path to a CSV file with columns "class_name" for the tool and "data" for an example user query.
+
+```bash
+ ./train.sh
+ --class "search: SEARCH_TOOL_DESCRIPTION" 
+ --class "order: ORDERING_TOOL_DESCRIPTION" 
+ --class "noop: NO_TOOL_DESCRIPTION"
+ --data CSV_DATA_FILEPATH
+```
 
 For example, here is a routing agent for a food delivery app that uses the tools {search, order, noop} trained using prompts.
 
@@ -212,14 +239,14 @@ classes = { "SOME_CLASS" : "SOME_PROMPT" }
 classifier.prompt_train(classes)
 ```
 
-Add some training examples (optional)
+Or if you have some training examples (optional)
 
 ```python
 data = ["example 1", "example 2"]
 classifier.add_data_to_class("SOME_CLASS", data)
 
 # Don't forget to train after adding data
-classifier.train()
+classifier.prompt_train()
 ```
 
 Classify your data
@@ -240,7 +267,7 @@ classifier.save("SOME_PATH")
 
 Load your model
 ```python
-classifier = LaminiClassifier.load(args["load"])
+classifier = LaminiClassifier.load("SOME_PATH")
 ```
 
 # FAQ
